@@ -76,7 +76,7 @@ export function ModelSelector() {
                 className="sm:w-[580px] w-[420px] p-0"
               >
                 <Command loop>
-                  <CommandList className="h-[var(--cmdk-list-height)] max-h-[400px]">
+                  <CommandList className="h-[var(--cmdk-list-height)] max-h-[300px] overflow-auto">
                     <CommandInput placeholder="Поиск моделей..." />
                     <CommandEmpty>Модели не найдены.</CommandEmpty>
                     <CommandGroup heading="Облачные модели">
