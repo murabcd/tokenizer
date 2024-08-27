@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import Image from "next/image";
+import Link from "next/link";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, FormProvider } from "react-hook-form";
@@ -138,7 +139,9 @@ export default function Home() {
       </div>
       <div className="absolute bottom-6 right-6 flex items-center">
         <span className="text-xs text-muted-foreground mr-2">Предоставлено</span>
-        <Image src="/flomni.svg" alt="Flomni Logo" width={50} height={50} />
+        <Link href="https://flomni.com/ru" target="_blank">
+          <Image src="/flomni.svg" alt="Flomni Logo" width={50} height={50} />
+        </Link>
       </div>
     </main>
   );
