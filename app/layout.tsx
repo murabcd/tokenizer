@@ -1,12 +1,19 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+import { GeistSans } from "geist/font/sans";
 
 export const metadata: Metadata = {
   title: "Flomni AI токен калькулятор",
   description: "Рассчитайте количество токенов и стоимость использования AI моделей",
+  icons: {
+    icon: [
+      {
+        url: "/flomni.svg",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
@@ -16,7 +23,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={GeistSans.className}>{children}</body>
     </html>
   );
 }

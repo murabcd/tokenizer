@@ -2,20 +2,18 @@
 
 import { useState } from "react";
 
+import Image from "next/image";
+
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, FormProvider } from "react-hook-form";
 
 import * as z from "zod";
 
+import { aiModels, estimateTokens, calculatePrice } from "./config/ai-models";
+
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Form,
   FormControl,
@@ -23,9 +21,10 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 
-import { aiModels, estimateTokens, calculatePrice } from "./config/ai-models";
+import { ModelSelector } from "@/components/model-selector";
 
 const formSchema = z.object({
   text: z.string().min(1, { message: "Текстовое поле не может быть пустым" }),
@@ -74,87 +73,73 @@ export default function Home() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-start p-24">
-      <h1 className="text-4xl font-bold mb-2">Flomni AI</h1>
-      <p className="text-sm text-muted-foreground mb-2 text-center max-w-xl">
-        Калькулятор стоимости LLM-моделей.
-      </p>
-      <p className="text-sm text-muted-foreground mb-8 text-center max-w-xl">
-        Оцените затраты на использование AI, рассчитайте количество токенов и получите
-        детальную разбивку цен для входных и выходных данных.
-      </p>
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(calculateTokens)}
-          className="w-full max-w-2xl space-y-4"
-        >
-          <FormField
-            control={form.control}
-            name="text"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Введите ваш текст</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Введите ваш текст здесь..."
-                    className="min-h-[100px]"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="model"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Выберите модель</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Выберите модель" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {aiModels.map((model) => (
-                      <SelectItem key={model.name} value={model.name}>
-                        {model.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <div className="flex space-x-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleReset}
-              className="flex-1"
-            >
-              Сбросить
-            </Button>
-            <Button type="submit" className="flex-1">
-              Рассчитать
-            </Button>
-          </div>
-        </form>
-      </Form>
-
-      {tokenCount > 0 && (
-        <div className="mt-4 p-4 bg-muted rounded w-full max-w-2xl">
-          <p>Примерное количество токенов: {tokenCount.toLocaleString()}</p>
-          <p>Примерная цена входных данных: {inputPrice.toFixed(2)} ₽</p>
-          <p>Примерная цена выходных данных: {outputPrice.toFixed(2)} ₽</p>
-          <p>Общая примерная цена: {totalPrice} ₽</p>
+    <main className="flex min-h-screen flex-col items-center justify-start p-4 sm:p-8 md:p-24 relative">
+      <div className="max-w-4xl">
+        <h1 className="text-3xl sm:text-4xl font-bold mb-2 text-center flex items-center justify-center">
+          Flomni AI
+          <Badge className="ml-2">Beta</Badge>
+        </h1>
+        <div className="text-sm text-muted-foreground mb-8 text-center max-w-xl mx-auto">
+          <p className="mb-2">Калькулятор стоимости LLM-моделей.</p>
+          <p>
+            Оцените затраты на использование AI, рассчитайте количество токенов и получите
+            детальную разбивку цен для входных и выходных данных.
+          </p>
         </div>
-      )}
+        <FormProvider {...form}>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(calculateTokens)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="text"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Текст</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Введите ваш текст здесь..."
+                        className="min-h-[100px]"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Вводите текст на русском языке (на английском может считать
+                      неверно).
+                    </FormDescription>
+                    <FormMessage className="text-xs text-destructive" />
+                  </FormItem>
+                )}
+              />
+              <ModelSelector />
+              <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleReset}
+                  className="flex-1"
+                >
+                  Сбросить
+                </Button>
+                <Button type="submit" className="flex-1">
+                  Рассчитать
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </FormProvider>
+        {tokenCount > 0 && (
+          <div className="text-sm mt-6 p-4 bg-muted rounded-md">
+            <p>Примерное количество токенов: {tokenCount.toLocaleString()}</p>
+            <p>Примерная цена входных данных: {inputPrice.toFixed(2)} ₽</p>
+            <p>Примерная цена выходных данных: {outputPrice.toFixed(2)} ₽</p>
+            <p>Общая примерная цена: {totalPrice} ₽</p>
+          </div>
+        )}
+      </div>
+      <div className="absolute bottom-6 right-6 flex items-center">
+        <span className="text-xs text-muted-foreground mr-2">Предоставлено</span>
+        <Image src="/flomni.svg" alt="Flomni Logo" width={50} height={50} />
+      </div>
     </main>
   );
 }
