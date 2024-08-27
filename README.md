@@ -1,4 +1,4 @@
-# Flomni AI Calculator
+# Tokenizer
 
 This Next.js 14 application serves as an AI model calculator and tokenizer, helping users estimate token counts and costs for various AI models.
 
