@@ -76,8 +76,12 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-start p-24">
       <h1 className="text-4xl font-bold mb-2">Flomni AI</h1>
-      <p className="text-sm text-muted-foreground mb-8">
-        Калькулятор стоимости AI-моделей.
+      <p className="text-sm text-muted-foreground mb-2 text-center max-w-xl">
+        Калькулятор стоимости LLM-моделей.
+      </p>
+      <p className="text-sm text-muted-foreground mb-8 text-center max-w-xl">
+        Оцените затраты на использование AI, рассчитайте количество токенов и получите
+        детальную разбивку цен для входных и выходных данных.
       </p>
       <Form {...form}>
         <form
@@ -144,7 +148,7 @@ export default function Home() {
       </Form>
 
       {tokenCount > 0 && (
-        <div className="mt-4 p-4 bg-gray-100 rounded w-full max-w-2xl">
+        <div className="mt-4 p-4 bg-muted rounded w-full max-w-2xl">
           <p>Примерное количество токенов: {tokenCount.toLocaleString()}</p>
           <p>Примерная цена входных данных: {inputPrice.toFixed(2)} ₽</p>
           <p>Примерная цена выходных данных: {outputPrice.toFixed(2)} ₽</p>
