@@ -104,8 +104,7 @@ export default function Home() {
                       />
                     </FormControl>
                     <FormDescription>
-                      Вводите текст на русском языке (на английском может считать
-                      неверно).
+                      Введите текст для подсчета токенов и расчета стоимости.
                     </FormDescription>
                     <FormMessage className="text-xs text-destructive" />
                   </FormItem>

@@ -209,17 +209,27 @@ export const aiModels: AIModel[] = [
   },
 ];
 
+// Import dynamically to avoid build errors
+let encode: (text: string) => number[];
+if (typeof window === "undefined") {
+  // Server-side
+  import("gpt-3-encoder").then((module) => {
+    encode = module.encode;
+  });
+} else {
+  // Client-side
+  encode = (text: string) => {
+    // Fallback to simple estimation on the client-side
+    return new Array(Math.ceil(text.length / 4));
+  };
+}
+
 export function estimateTokens(text: string): number {
-  // This is a rough estimation based on GPT-3 tokenization rules
-  // It's not as accurate as gpt-3-encoder but works in the browser
-  const words = text.trim().split(/\s+/);
-  let tokenCount = 0;
-
-  for (const word of words) {
-    tokenCount += Math.ceil(word.length / 4); // Assume average 4 characters per token
+  if (typeof encode === "function") {
+    return encode(text).length;
   }
-
-  return Math.max(1, tokenCount); // Ensure at least 1 token
+  // Fallback to simple estimation if encode is not available
+  return Math.ceil(text.length / 4);
 }
 
 export function calculatePrice(tokens: number, pricePerThousandTokens: number): number {
