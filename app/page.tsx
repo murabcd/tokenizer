@@ -36,18 +36,17 @@ export default function Home() {
   const [tokenCount, setTokenCount] = useState(0);
   const [inputPrice, setInputPrice] = useState(0);
   const [outputPrice, setOutputPrice] = useState(0);
+  const [selectedModel, setSelectedModel] = useState(aiModels[0]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       text: "",
-      model: aiModels[0].name,
+      model: aiModels[0].id,
     },
   });
 
   const calculateTokens = (values: z.infer<typeof formSchema>) => {
-    const selectedModel =
-      aiModels.find((model) => model.name === values.model) || aiModels[0];
     const estimatedTokens = estimateTokens(values.text);
     setTokenCount(estimatedTokens);
 
@@ -64,10 +63,17 @@ export default function Home() {
     setOutputPrice(Number(calculatedOutputPrice.toFixed(2)));
   };
 
+  const handleModelChange = (model: (typeof aiModels)[0]) => {
+    setSelectedModel(model);
+    form.setValue("model", model.id);
+    calculateTokens({ ...form.getValues(), model: model.id });
+  };
+
   const totalPrice = Number((inputPrice + outputPrice).toFixed(2));
 
   const handleReset = () => {
-    form.reset({ text: "", model: aiModels[0].name });
+    form.reset({ text: "", model: aiModels[0].id });
+    setSelectedModel(aiModels[0]);
     setTokenCount(0);
     setInputPrice(0);
     setOutputPrice(0);
@@ -110,7 +116,7 @@ export default function Home() {
                   </FormItem>
                 )}
               />
-              <ModelSelector />
+              <ModelSelector onModelChange={handleModelChange} />
               <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
                 <Button
                   type="button"
@@ -129,6 +135,7 @@ export default function Home() {
         </FormProvider>
         {tokenCount > 0 && (
           <div className="text-sm mt-6 p-4 bg-muted rounded-md">
+            <p>Выбранная модель: {selectedModel.name}</p>
             <p>Примерное количество токенов: {tokenCount.toLocaleString()}</p>
             <p>Примерная цена входных данных: {inputPrice.toFixed(2)} ₽</p>
             <p>Примерная цена выходных данных: {outputPrice.toFixed(2)} ₽</p>

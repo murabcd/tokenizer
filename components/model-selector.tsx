@@ -34,7 +34,11 @@ import {
 } from "@/components/ui/form";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
-export function ModelSelector() {
+interface ModelSelectorProps {
+  onModelChange: (model: (typeof aiModels)[0]) => void;
+}
+
+export function ModelSelector({ onModelChange }: ModelSelectorProps) {
   const [open, setOpen] = React.useState(false);
   const [selectedModel, setSelectedModel] = React.useState(aiModels[0]);
 
@@ -46,6 +50,13 @@ export function ModelSelector() {
 
   const cloudModels = aiModels.filter((model) => model.category === "cloud");
   const localModels = aiModels.filter((model) => model.category === "local");
+
+  const handleModelSelect = (model: (typeof aiModels)[0]) => {
+    setSelectedModel(model);
+    setOpen(false);
+    form.setValue("model", model.id);
+    onModelChange(model); // Pass the entire model object
+  };
 
   return (
     <Form {...form}>
@@ -85,11 +96,7 @@ export function ModelSelector() {
                           key={model.id}
                           model={model}
                           isSelected={selectedModel?.id === model.id}
-                          onSelect={() => {
-                            setSelectedModel(model);
-                            setOpen(false);
-                            form.setValue("model", model.id);
-                          }}
+                          onSelect={() => handleModelSelect(model)}
                         />
                       ))}
                     </CommandGroup>
@@ -99,11 +106,7 @@ export function ModelSelector() {
                           key={model.id}
                           model={model}
                           isSelected={selectedModel?.id === model.id}
-                          onSelect={() => {
-                            setSelectedModel(model);
-                            setOpen(false);
-                            form.setValue("model", model.id);
-                          }}
+                          onSelect={() => handleModelSelect(model)}
                         />
                       ))}
                     </CommandGroup>
