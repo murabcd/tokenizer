@@ -5,8 +5,8 @@ import "./globals.css";
 import { GeistSans } from "geist/font/sans";
 
 export const metadata: Metadata = {
-  title: "Flomni AI калькулятор",
-  description: "Рассчитайте количество токенов и стоимость использования AI моделей",
+  title: "AI Calculator & Tokenizer",
+  description: "Calculate the number of tokens and the cost of using AI models",
   icons: {
     icon: "/flomni.svg",
   },

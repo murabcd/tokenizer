@@ -65,7 +65,7 @@ export function ModelSelector({ onModelChange }: ModelSelectorProps) {
         name="model"
         render={({ field }) => (
           <FormItem>
-            <FormLabel htmlFor="model">Модель</FormLabel>
+            <FormLabel htmlFor="model">Model</FormLabel>
             <Popover open={open} onOpenChange={setOpen}>
               <PopoverTrigger asChild>
                 <Button
@@ -73,11 +73,11 @@ export function ModelSelector({ onModelChange }: ModelSelectorProps) {
                   variant="outline"
                   role="combobox"
                   aria-expanded={open}
-                  aria-label="Выберите модель"
+                  aria-label="Select a model"
                   className="w-full justify-between"
                   {...field}
                 >
-                  {selectedModel ? selectedModel.name : "Выберите модель..."}
+                  {selectedModel ? selectedModel.name : "Select a model..."}
                   <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
@@ -88,9 +88,9 @@ export function ModelSelector({ onModelChange }: ModelSelectorProps) {
               >
                 <Command loop>
                   <CommandList className="h-[var(--cmdk-list-height)] max-h-[300px] overflow-auto">
-                    <CommandInput placeholder="Поиск моделей..." />
-                    <CommandEmpty>Модели не найдены.</CommandEmpty>
-                    <CommandGroup heading="Облачные модели">
+                    <CommandInput placeholder="Search models..." />
+                    <CommandEmpty>No models found.</CommandEmpty>
+                    <CommandGroup heading="Closed-source Models">
                       {cloudModels.map((model) => (
                         <ModelItem
                           key={model.id}
@@ -100,7 +100,7 @@ export function ModelSelector({ onModelChange }: ModelSelectorProps) {
                         />
                       ))}
                     </CommandGroup>
-                    <CommandGroup heading="Контурные модели">
+                    <CommandGroup heading="Open-source Models">
                       {localModels.map((model) => (
                         <ModelItem
                           key={model.id}
@@ -115,7 +115,7 @@ export function ModelSelector({ onModelChange }: ModelSelectorProps) {
               </PopoverContent>
             </Popover>
             <FormDescription>
-              Модели отличаются ценой входных и выходных токенов.
+              Models vary in the price of input and output tokens.
             </FormDescription>
             <FormMessage className="text-sm text-destructive" />
           </FormItem>

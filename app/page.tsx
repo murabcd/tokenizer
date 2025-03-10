@@ -28,7 +28,7 @@ import {
 import { ModelSelector } from "@/components/model-selector";
 
 const formSchema = z.object({
-  text: z.string().min(1, { message: "Текстовое поле не может быть пустым" }),
+  text: z.string().min(1, { message: "Text field cannot be empty" }),
   model: z.string(),
 });
 
@@ -87,10 +87,10 @@ export default function Home() {
           <Badge className="ml-2">Beta</Badge>
         </h1>
         <div className="text-sm text-muted-foreground mb-8 text-center max-w-xl mx-auto">
-          <p className="mb-2">Калькулятор стоимости LLM-моделей.</p>
+          <p className="mb-2">LLM Model Cost Calculator</p>
           <p>
-            Оцените затраты на использование AI, рассчитайте количество токенов и получите
-            детальную разбивку цен для входных и выходных данных.
+            Estimate the costs of using AI, calculate the number of tokens, and get a
+            detailed breakdown of prices for input and output data.
           </p>
         </div>
         <FormProvider {...form}>
@@ -101,16 +101,16 @@ export default function Home() {
                 name="text"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Текст</FormLabel>
+                    <FormLabel>Text</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Введите ваш текст здесь..."
+                        placeholder="Enter your text here..."
                         className="min-h-[100px]"
                         {...field}
                       />
                     </FormControl>
                     <FormDescription>
-                      Введите текст для подсчета токенов и расчета стоимости.
+                      Enter text to count tokens and calculate cost.
                     </FormDescription>
                     <FormMessage className="text-xs text-destructive" />
                   </FormItem>
@@ -124,10 +124,10 @@ export default function Home() {
                   onClick={handleReset}
                   className="flex-1"
                 >
-                  Сбросить
+                  Reset
                 </Button>
                 <Button type="submit" className="flex-1">
-                  Рассчитать
+                  Calculate
                 </Button>
               </div>
             </form>
@@ -135,19 +135,13 @@ export default function Home() {
         </FormProvider>
         {tokenCount > 0 && (
           <div className="text-sm mt-6 p-4 bg-muted rounded-md">
-            <p>Выбранная модель: {selectedModel.name}</p>
-            <p>Примерное количество токенов: {tokenCount.toLocaleString()}</p>
-            <p>Примерная цена входных данных: {inputPrice.toFixed(2)} ₽</p>
-            <p>Примерная цена выходных данных: {outputPrice.toFixed(2)} ₽</p>
-            <p>Общая примерная цена: {totalPrice} ₽</p>
+            <p>Selected Model: {selectedModel.name}</p>
+            <p>Estimated number of tokens: {tokenCount.toLocaleString()}</p>
+            <p>Approximate input data price: {inputPrice.toFixed(2)} ₽</p>
+            <p>Approximate output data price: {outputPrice.toFixed(2)} ₽</p>
+            <p>Total approximate price: {totalPrice} ₽</p>
           </div>
         )}
-      </div>
-      <div className="absolute bottom-6 right-6 flex items-center">
-        <span className="text-xs text-muted-foreground mr-2">Предоставлено</span>
-        <Link href="https://flomni.com/ru" target="_blank">
-          <Image src="/flomni.svg" alt="Flomni Logo" width={50} height={50} />
-        </Link>
       </div>
     </main>
   );
