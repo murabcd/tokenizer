@@ -83,7 +83,7 @@ export default function Home() {
     <main className="flex min-h-screen flex-col items-center justify-start p-4 sm:p-8 md:p-24 relative">
       <div className="max-w-4xl">
         <h1 className="text-3xl sm:text-4xl font-bold mb-2 text-center flex items-center justify-center">
-          Flomni AI
+          Tokenizer
           <Badge className="ml-2">Beta</Badge>
         </h1>
         <div className="text-sm text-muted-foreground mb-8 text-center max-w-xl mx-auto">
