@@ -4,22 +4,33 @@ import "./globals.css";
 
 import { GeistSans } from "geist/font/sans";
 
+import { ThemeProvider } from "@/components/theme-provider";
+
 export const metadata: Metadata = {
-  title: "AI Calculator & Tokenizer",
-  description: "Calculate the number of tokens and the cost of using AI models",
-  icons: {
-    icon: "/flomni.svg",
-  },
+	title: "Tokenizer",
+	description: "Calculate the number of tokens and the cost of using AI models",
+	icons: {
+		icon: "/flomni.svg",
+	},
 };
 
 export default function RootLayout({
-  children,
+	children,
 }: Readonly<{
-  children: React.ReactNode;
+	children: React.ReactNode;
 }>) {
-  return (
-    <html lang="en">
-      <body className={GeistSans.className}>{children}</body>
-    </html>
-  );
+	return (
+		<html lang="en" suppressHydrationWarning>
+			<body className={GeistSans.className}>
+				<ThemeProvider
+					attribute="class"
+					defaultTheme="system"
+					enableSystem
+					disableTransitionOnChange
+				>
+					{children}
+				</ThemeProvider>
+			</body>
+		</html>
+	);
 }

@@ -1,176 +1,219 @@
 "use client";
 
-import { useState } from "react";
-
-import Image from "next/image";
-import Link from "next/link";
-
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, FormProvider } from "react-hook-form";
-
-import * as z from "zod";
-
-import { estimateTokens } from "@/lib/tokenizer";
-import { APIModel } from "@/lib/types";
-
-import { Badge } from "@/components/ui/badge";
+import { useState, useCallback } from "react";
+import { estimateTokens, estimateTokensSync } from "@/lib/tokenizer";
+import type { APIModel } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-  FormDescription,
-} from "@/components/ui/form";
-
+import { Label } from "@/components/ui/label";
 import { ModelSelector } from "@/components/model-selector";
-
-const formSchema = z.object({
-  text: z.string().min(1, { message: "Text field cannot be empty" }),
-  model: z.string(),
-});
+import { ModeToggle } from "@/components/mode-toggle";
 
 export default function Home() {
-  const [tokenCount, setTokenCount] = useState(0);
-  const [inputPrice, setInputPrice] = useState(0);
-  const [outputPrice, setOutputPrice] = useState(0);
-  const [selectedModel, setSelectedModel] = useState<APIModel | null>(null);
+	const [text, setText] = useState("");
+	const [tokenCount, setTokenCount] = useState(0);
+	const [characterCount, setCharacterCount] = useState(0);
+	const [selectedModel, setSelectedModel] = useState<APIModel | null>(null);
+	const [isLoading, setIsLoading] = useState(false);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      text: "",
-      model: "",
-    },
-  });
+	const updateTokenCount = useCallback(async (newText: string) => {
+		// Immediately show estimated count for better UX
+		const estimatedTokens = estimateTokensSync(newText);
+		setTokenCount(estimatedTokens);
 
-  const calculatePrice = (tokens: number, pricePerThousandTokens: number): number => {
-    return (tokens / 1000) * pricePerThousandTokens;
-  };
+		// Then calculate accurate count if encoder is available
+		setIsLoading(true);
+		try {
+			const accurateTokens = await estimateTokens(newText);
+			setTokenCount(accurateTokens);
+		} catch (error) {
+			console.warn("Failed to get accurate token count:", error);
+			// Keep the estimated count
+		} finally {
+			setIsLoading(false);
+		}
+	}, []);
 
-  const calculateTokens = (values: z.infer<typeof formSchema>) => {
-    if (!selectedModel) return;
-    
-    const estimatedTokens = estimateTokens(values.text);
-    setTokenCount(estimatedTokens);
+	const handleTextChange = (newText: string) => {
+		setText(newText);
+		setCharacterCount(newText.length);
+		updateTokenCount(newText);
+	};
 
-    if (selectedModel.cost) {
-      const calculatedInputPrice = calculatePrice(
-        estimatedTokens,
-        selectedModel.cost.input
-      );
-      const calculatedOutputPrice = calculatePrice(
-        estimatedTokens,
-        selectedModel.cost.output
-      );
+	const handleModelChange = (model: APIModel) => {
+		setSelectedModel(model);
+		// Recalculate tokens when model changes
+		updateTokenCount(text);
+	};
 
-      setInputPrice(Number(calculatedInputPrice.toFixed(2)));
-      setOutputPrice(Number(calculatedOutputPrice.toFixed(2)));
-    } else {
-      setInputPrice(0);
-      setOutputPrice(0);
-    }
-  };
+	const clearText = () => {
+		setText("");
+		setTokenCount(0);
+		setCharacterCount(0);
+	};
 
-  const handleModelChange = (model: APIModel) => {
-    setSelectedModel(model);
-    form.setValue("model", model.id);
-    // Clear previous calculations when model changes
-    setTokenCount(0);
-    setInputPrice(0);
-    setOutputPrice(0);
-  };
+	const showExample = () => {
+		const exampleText = `The quick brown fox jumps over the lazy dog. This pangram contains every letter of the English alphabet at least once. Pangrams are often used to display font samples and test keyboards. They are also useful for practicing typing and calligraphy. The sentence is simple yet effective for demonstrating how text can be tokenized by language models.`;
+		setText(exampleText);
+		setCharacterCount(exampleText.length);
+		updateTokenCount(exampleText);
+	};
 
-  const totalPrice = Number((inputPrice + outputPrice).toFixed(2));
+	return (
+		<main className="flex min-h-screen flex-col items-center justify-start p-6 sm:p-8 md:p-16 relative">
+			<div className="max-w-3xl w-full">
+				{/* Header */}
+				<div className="mb-6 flex justify-between items-start">
+					<div>
+						<h1 className="text-2xl sm:text-3xl font-bold mb-3">Tokenizer</h1>
+						<p className="text-base text-muted-foreground">
+							Learn about language model tokenization.
+						</p>
+					</div>
+					<ModeToggle />
+				</div>
 
-  const handleReset = () => {
-    form.reset({ text: "", model: "" });
-    setSelectedModel(null);
-    setTokenCount(0);
-    setInputPrice(0);
-    setOutputPrice(0);
-  };
+				{/* Introduction */}
+				<div className="mb-6 space-y-3 text-sm leading-relaxed">
+					<p>
+						Large language models process text using <strong>tokens</strong>,
+						which are common sequences of characters found in a set of text. The
+						models learn to understand the statistical relationships between
+						these tokens, and excel at producing the next token in a sequence of
+						tokens.
+					</p>
+					<p>
+						You can use the tool below to understand how a piece of text might
+						be tokenized by a language model, and see the total count of tokens
+						and estimated costs.
+					</p>
+				</div>
 
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-start p-4 sm:p-8 md:p-24 relative">
-      <div className="max-w-4xl">
-        <h1 className="text-3xl sm:text-4xl font-bold mb-2 text-center flex items-center justify-center">
-          Tokenizer
-          <Badge className="ml-2">Beta</Badge>
-        </h1>
-        <div className="text-sm text-muted-foreground mb-8 text-center max-w-xl mx-auto">
-          <p className="mb-2">LLM Model Cost Calculator</p>
-          <p>
-            Estimate the costs of using AI, calculate the number of tokens, and get a
-            detailed breakdown of prices for input and output data.
-          </p>
-        </div>
-        <FormProvider {...form}>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(calculateTokens)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="text"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Text</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Enter your text here..."
-                        className="min-h-[100px]"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Enter text to count tokens and calculate cost.
-                    </FormDescription>
-                    <FormMessage className="text-xs text-destructive" />
-                  </FormItem>
-                )}
-              />
-              <ModelSelector onModelChange={handleModelChange} />
-              <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleReset}
-                  className="flex-1"
-                >
-                  Reset
-                </Button>
-                <Button 
-                  type="submit" 
-                  className="flex-1"
-                  disabled={!selectedModel}
-                >
-                  Calculate
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </FormProvider>
-        {tokenCount > 0 && selectedModel && (
-          <div className="text-sm mt-6 p-4 bg-muted rounded-md">
-            <p>Selected Model: {selectedModel.name} ({selectedModel.provider})</p>
-            <p>Estimated number of tokens: {tokenCount.toLocaleString()}</p>
-            {selectedModel.cost ? (
-              <>
-                <p>Approximate input data price: ${inputPrice.toFixed(4)}</p>
-                <p>Approximate output data price: ${outputPrice.toFixed(4)}</p>
-                <p>Total approximate price: ${totalPrice.toFixed(4)}</p>
-              </>
-            ) : (
-              <p className="text-muted-foreground">Pricing information not available for this model</p>
-            )}
-            {selectedModel.limit?.context && (
-              <p>Context limit: {selectedModel.limit.context.toLocaleString()} tokens</p>
-            )}
-          </div>
-        )}
-      </div>
-    </main>
-  );
+				{/* Model Selection */}
+				<div className="mb-5">
+					<ModelSelector onModelChange={handleModelChange} />
+				</div>
+
+				{/* Tokenization Tool */}
+				<div className="space-y-4">
+					{/* Text Input */}
+					<div className="space-y-2">
+						<Label htmlFor="text-input">Text to tokenize</Label>
+						<Textarea
+							id="text-input"
+							value={text}
+							onChange={(e) => handleTextChange(e.target.value)}
+							placeholder="Enter your text here..."
+							className="min-h-[250px] resize-none text-sm leading-relaxed"
+						/>
+					</div>
+
+					{/* Control Buttons */}
+					<div className="flex space-x-3">
+						<Button variant="outline" size="sm" onClick={clearText}>
+							Clear
+						</Button>
+						<Button variant="outline" size="sm" onClick={showExample}>
+							Show example
+						</Button>
+					</div>
+
+					{/* Token and Character Counts */}
+					<div className="space-y-2">
+						<Label>Results</Label>
+						<div className="flex space-x-6 text-sm">
+							<div>
+								<span className="font-medium">Tokens:</span>{" "}
+								<span className="tabular-nums">
+									{tokenCount.toLocaleString()}
+								</span>
+								{isLoading && (
+									<span className="text-xs text-muted-foreground ml-1">
+										(updating...)
+									</span>
+								)}
+							</div>
+							<div>
+								<span className="font-medium">Characters:</span>{" "}
+								<span className="tabular-nums">
+									{characterCount.toLocaleString()}
+								</span>
+							</div>
+							{selectedModel?.cost && (
+								<>
+									<div>
+										<span className="font-medium">Input:</span>{" "}
+										<span className="tabular-nums">
+											$
+											{((tokenCount / 1000) * selectedModel.cost.input).toFixed(
+												6,
+											)}
+										</span>
+									</div>
+									<div>
+										<span className="font-medium">Output:</span>{" "}
+										<span className="tabular-nums">
+											$
+											{(
+												(tokenCount / 1000) *
+												selectedModel.cost.output
+											).toFixed(6)}
+										</span>
+									</div>
+									<div>
+										<span className="font-medium">Total:</span>{" "}
+										<span className="tabular-nums">
+											$
+											{(
+												(tokenCount / 1000) * selectedModel.cost.input +
+												(tokenCount / 1000) * selectedModel.cost.output
+											).toFixed(6)}
+										</span>
+									</div>
+								</>
+							)}
+						</div>
+					</div>
+
+					{/* Model Capabilities */}
+					{selectedModel && (
+						<div className="space-y-2">
+							<Label>Model capabilities</Label>
+							<div className="flex flex-wrap gap-1">
+								{selectedModel.tool_call && (
+									<span className="text-xs bg-blue-100 text-blue-800 px-1 py-0.5 rounded">
+										Tool Call
+									</span>
+								)}
+								{selectedModel.reasoning && (
+									<span className="text-xs bg-green-100 text-green-800 px-1 py-0.5 rounded">
+										Reasoning
+									</span>
+								)}
+								{selectedModel.attachment && (
+									<span className="text-xs bg-purple-100 text-purple-800 px-1 py-0.5 rounded">
+										Attachment
+									</span>
+								)}
+								{selectedModel.open_weights && (
+									<span className="text-xs bg-orange-100 text-orange-800 px-1 py-0.5 rounded">
+										Open Weights
+									</span>
+								)}
+							</div>
+						</div>
+					)}
+				</div>
+
+				{/* Additional Information */}
+				<div className="mt-8 space-y-3 text-sm leading-relaxed">
+					<p>
+						<strong>Helpful rule of thumb:</strong> one token generally
+						corresponds to ~4 characters of text for common English text. This
+						translates to roughly ¾ of a word (so 100 tokens ~= 75 words).
+					</p>
+				</div>
+			</div>
+		</main>
+	);
 }

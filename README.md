@@ -1,70 +1,51 @@
-# Tokenizer
+<a href="https://oss-tokenizer.vercel.app">
+<img alt="AI Model Tokenization with Real-time Token Counting" src="./public/preview/tokenizer.png">
+  <h1 align="center">Tokenizer</h1>
+</a>
 
-This Next.js 14 application serves as an AI model calculator and tokenizer, helping users estimate token counts and costs for various AI models.
+<p align="center">
+  AI Model Tokenization with Real-time Token Counting
+</p>
+
+<p align="center">
+  <a href="#features"><strong>Features</strong></a> ·
+  <a href="#deploy-your-own"><strong>Deploy your own</strong></a> ·
+  <a href="#running-locally"><strong>Running locally</strong></a>
+</p>
+<br/>
 
 ## Features
 
-- Select from a range of AI models (cloud-based and local)
-- Calculate token count for input text using gpt-3-encoder
-- Estimate costs based on selected model and token count
-- User-friendly interface with model search and detailed information
-- Responsive design using Tailwind CSS
-- Lucide React icons for enhanced UI
+- [Next.js](https://nextjs.org)
+  - App Router with file-based routing and server components
+  - Built-in API routes for token counting
+- [Shadcn/ui](https://ui.shadcn.com)
+  - Beautiful, accessible UI components built with Radix UI
+  - Custom components for consistent design and developer experience
+- [Multiple AI Models](https://models.dev/?search=groq)
+  - Support for various language models from SST's Models.dev database
+  - Comprehensive model specifications, pricing, and capabilities data
 
-## Getting Started
+## Deploy your own
 
-### Prerequisites
+You can deploy your own version of Tokenizer to Vercel with one click:
 
-- Node.js 14.x or later
-- npm or Yarn
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmuradpm%2Ftokenizer&demo-title=Tokenizer&demo-description=Learn%20about%20AI%20model%20tokenization%20with%20real-time%20token%20counting%20built%20with%20Next.js%2014.&demo-url=https%3A%2F%2Ftokenizer.vercel.app)
 
-### Installation
+## Running locally
 
-1. Clone the repository:
+You will need to use the environment variables [defined in `.env.example`](.env.example) to run Tokenizer. It's recommended you use [Vercel Environment Variables](https://vercel.com/docs/projects/environment-variables) for this, but a `.env` file is all that is necessary.
 
-   ```
-   git clone https://github.com/muradpm/tokenizer.git
-   ```
+> Note: You should not commit your `.env` file or it will expose secrets that will allow others to control access to your various accounts.
 
-2. Navigate to the project directory:
+1. Clone the repository: `git clone https://github.com/muradpm/tokenizer.git`
+2. Install Vercel CLI: `bun i -g vercel`
+3. Link local instance with Vercel and GitHub accounts (creates `.vercel` directory): `vercel link`
+4. Download your environment variables: `vercel env pull`
 
-   ```
-   cd tokenizer
-   ```
+```bash
+bun install
+bun dev
+```
 
-3. Install dependencies:
-
-   ```
-   npm install
-   # or
-   yarn install
-   ```
-
-4. Run the development server:
-
-   ```
-   npm run dev
-   # or
-   yarn dev
-   ```
-
-5. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-## Usage
-
-1. Select an AI model from the dropdown or search for a specific model.
-2. Enter your text in the input area.
-3. View the calculated token count (using gpt-3-encoder) and estimated cost.
-4. Hover over model names for additional information.
-
-## Built With
-
-- [Next.js 14](https://nextjs.org/)
-- [React](https://reactjs.org/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Lucide React](https://lucide.dev/)
-- [GPT-3-encoder](https://www.npmjs.com/package/gpt-3-encoder)
-
-## License
-
-This project is open source and available under the [MIT License](LICENSE).
+Your app should now be running on [localhost:3000](http://localhost:3000/)
