@@ -10,7 +10,8 @@ import { useForm, FormProvider } from "react-hook-form";
 
 import * as z from "zod";
 
-import { aiModels, estimateTokens, calculatePrice } from "./config/ai-models";
+import { estimateTokens } from "@/lib/tokenizer";
+import { APIModel } from "@/lib/types";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,44 +37,58 @@ export default function Home() {
   const [tokenCount, setTokenCount] = useState(0);
   const [inputPrice, setInputPrice] = useState(0);
   const [outputPrice, setOutputPrice] = useState(0);
-  const [selectedModel, setSelectedModel] = useState(aiModels[0]);
+  const [selectedModel, setSelectedModel] = useState<APIModel | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       text: "",
-      model: aiModels[0].id,
+      model: "",
     },
   });
 
+  const calculatePrice = (tokens: number, pricePerThousandTokens: number): number => {
+    return (tokens / 1000) * pricePerThousandTokens;
+  };
+
   const calculateTokens = (values: z.infer<typeof formSchema>) => {
+    if (!selectedModel) return;
+    
     const estimatedTokens = estimateTokens(values.text);
     setTokenCount(estimatedTokens);
 
-    const calculatedInputPrice = calculatePrice(
-      estimatedTokens,
-      selectedModel.inputPricePerThousandTokens
-    );
-    const calculatedOutputPrice = calculatePrice(
-      estimatedTokens,
-      selectedModel.outputPricePerThousandTokens
-    );
+    if (selectedModel.cost) {
+      const calculatedInputPrice = calculatePrice(
+        estimatedTokens,
+        selectedModel.cost.input
+      );
+      const calculatedOutputPrice = calculatePrice(
+        estimatedTokens,
+        selectedModel.cost.output
+      );
 
-    setInputPrice(Number(calculatedInputPrice.toFixed(2)));
-    setOutputPrice(Number(calculatedOutputPrice.toFixed(2)));
+      setInputPrice(Number(calculatedInputPrice.toFixed(2)));
+      setOutputPrice(Number(calculatedOutputPrice.toFixed(2)));
+    } else {
+      setInputPrice(0);
+      setOutputPrice(0);
+    }
   };
 
-  const handleModelChange = (model: (typeof aiModels)[0]) => {
+  const handleModelChange = (model: APIModel) => {
     setSelectedModel(model);
     form.setValue("model", model.id);
-    calculateTokens({ ...form.getValues(), model: model.id });
+    // Clear previous calculations when model changes
+    setTokenCount(0);
+    setInputPrice(0);
+    setOutputPrice(0);
   };
 
   const totalPrice = Number((inputPrice + outputPrice).toFixed(2));
 
   const handleReset = () => {
-    form.reset({ text: "", model: aiModels[0].id });
-    setSelectedModel(aiModels[0]);
+    form.reset({ text: "", model: "" });
+    setSelectedModel(null);
     setTokenCount(0);
     setInputPrice(0);
     setOutputPrice(0);
@@ -126,20 +141,33 @@ export default function Home() {
                 >
                   Reset
                 </Button>
-                <Button type="submit" className="flex-1">
+                <Button 
+                  type="submit" 
+                  className="flex-1"
+                  disabled={!selectedModel}
+                >
                   Calculate
                 </Button>
               </div>
             </form>
           </Form>
         </FormProvider>
-        {tokenCount > 0 && (
+        {tokenCount > 0 && selectedModel && (
           <div className="text-sm mt-6 p-4 bg-muted rounded-md">
-            <p>Selected Model: {selectedModel.name}</p>
+            <p>Selected Model: {selectedModel.name} ({selectedModel.provider})</p>
             <p>Estimated number of tokens: {tokenCount.toLocaleString()}</p>
-            <p>Approximate input data price: {inputPrice.toFixed(2)} ₽</p>
-            <p>Approximate output data price: {outputPrice.toFixed(2)} ₽</p>
-            <p>Total approximate price: {totalPrice} ₽</p>
+            {selectedModel.cost ? (
+              <>
+                <p>Approximate input data price: ${inputPrice.toFixed(4)}</p>
+                <p>Approximate output data price: ${outputPrice.toFixed(4)}</p>
+                <p>Total approximate price: ${totalPrice.toFixed(4)}</p>
+              </>
+            ) : (
+              <p className="text-muted-foreground">Pricing information not available for this model</p>
+            )}
+            {selectedModel.limit?.context && (
+              <p>Context limit: {selectedModel.limit.context.toLocaleString()} tokens</p>
+            )}
           </div>
         )}
       </div>

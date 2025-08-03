@@ -7,8 +7,7 @@ import { useForm } from "react-hook-form";
 import { ChevronDown, Check } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-
-import { aiModels } from "@/app/config/ai-models";
+import { APIModel } from "@/lib/types";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -35,28 +34,99 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface ModelSelectorProps {
-  onModelChange: (model: (typeof aiModels)[0]) => void;
+  onModelChange: (model: APIModel) => void;
 }
 
 export function ModelSelector({ onModelChange }: ModelSelectorProps) {
   const [open, setOpen] = React.useState(false);
-  const [selectedModel, setSelectedModel] = React.useState(aiModels[0]);
+  const [selectedModel, setSelectedModel] = React.useState<APIModel | null>(null);
+  const [models, setModels] = React.useState<APIModel[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
 
   const form = useForm({
     defaultValues: {
-      model: aiModels[0].id,
+      model: "",
     },
   });
 
-  const cloudModels = aiModels.filter((model) => model.category === "cloud");
-  const localModels = aiModels.filter((model) => model.category === "local");
+  // Store onModelChange in a ref to avoid infinite re-renders
+  const onModelChangeRef = React.useRef(onModelChange);
+  onModelChangeRef.current = onModelChange;
 
-  const handleModelSelect = (model: (typeof aiModels)[0]) => {
+  // Fetch models from API
+  React.useEffect(() => {
+    const fetchModels = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch("/api/models");
+        const result = await response.json();
+        
+        if (result.success && result.data) {
+          setModels(result.data);
+          // Set the first model as default if available
+          if (result.data.length > 0) {
+            setSelectedModel(result.data[0]);
+            form.setValue("model", result.data[0].id);
+            onModelChangeRef.current(result.data[0]);
+          }
+        } else {
+          setError("Failed to fetch models");
+        }
+      } catch (err) {
+        setError("Error loading models");
+        console.error("Error fetching models:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchModels();
+  }, [form]); // Remove onModelChange from dependencies
+
+  // Group models by provider
+  const groupedModels = React.useMemo(() => {
+    const groups: Record<string, APIModel[]> = {};
+    models.forEach(model => {
+      if (!groups[model.provider]) {
+        groups[model.provider] = [];
+      }
+      groups[model.provider].push(model);
+    });
+    return groups;
+  }, [models]);
+
+  const handleModelSelect = (model: APIModel) => {
     setSelectedModel(model);
     setOpen(false);
     form.setValue("model", model.id);
-    onModelChange(model); // Pass the entire model object
+    onModelChangeRef.current(model);
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-2">
+        <FormLabel>Model</FormLabel>
+        <Button variant="outline" disabled className="w-full justify-between">
+          Loading models...
+        </Button>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-2">
+        <FormLabel>Model</FormLabel>
+        <Button variant="outline" disabled className="w-full justify-between">
+          Error loading models
+        </Button>
+        <FormDescription className="text-destructive">
+          {error}
+        </FormDescription>
+      </div>
+    );
+  }
 
   return (
     <Form {...form}>
@@ -90,32 +160,24 @@ export function ModelSelector({ onModelChange }: ModelSelectorProps) {
                   <CommandList className="h-[var(--cmdk-list-height)] max-h-[300px] overflow-auto">
                     <CommandInput placeholder="Search models..." />
                     <CommandEmpty>No models found.</CommandEmpty>
-                    <CommandGroup heading="Closed-source Models">
-                      {cloudModels.map((model) => (
-                        <ModelItem
-                          key={model.id}
-                          model={model}
-                          isSelected={selectedModel?.id === model.id}
-                          onSelect={() => handleModelSelect(model)}
-                        />
-                      ))}
-                    </CommandGroup>
-                    <CommandGroup heading="Open-source Models">
-                      {localModels.map((model) => (
-                        <ModelItem
-                          key={model.id}
-                          model={model}
-                          isSelected={selectedModel?.id === model.id}
-                          onSelect={() => handleModelSelect(model)}
-                        />
-                      ))}
-                    </CommandGroup>
+                    {Object.entries(groupedModels).map(([provider, providerModels]) => (
+                      <CommandGroup key={provider} heading={provider}>
+                        {providerModels.map((model) => (
+                          <ModelItem
+                            key={model.id}
+                            model={model}
+                            isSelected={selectedModel?.id === model.id}
+                            onSelect={() => handleModelSelect(model)}
+                          />
+                        ))}
+                      </CommandGroup>
+                    ))}
                   </CommandList>
                 </Command>
               </PopoverContent>
             </Popover>
             <FormDescription>
-              Models vary in the price of input and output tokens.
+              Models vary in capabilities and pricing. Select based on your needs.
             </FormDescription>
             <FormMessage className="text-sm text-destructive" />
           </FormItem>
@@ -126,12 +188,17 @@ export function ModelSelector({ onModelChange }: ModelSelectorProps) {
 }
 
 interface ModelItemProps {
-  model: (typeof aiModels)[0];
+  model: APIModel;
   isSelected: boolean;
   onSelect: () => void;
 }
 
 function ModelItem({ model, isSelected, onSelect }: ModelItemProps) {
+  const formatCost = (cost?: number) => {
+    if (!cost) return "N/A";
+    return `$${(cost * 1000).toFixed(2)}/1K tokens`;
+  };
+
   return (
     <HoverCard openDelay={300}>
       <HoverCardTrigger asChild>
@@ -149,12 +216,27 @@ function ModelItem({ model, isSelected, onSelect }: ModelItemProps) {
       <HoverCardContent
         side="left"
         align="start"
-        className="w-[300px] text-sm"
+        className="w-[350px] text-sm"
         sideOffset={10}
       >
         <div className="grid gap-2">
           <h4 className="font-medium">{model.name}</h4>
-          <p className="text-xs text-muted-foreground">{model.description}</p>
+          <p className="text-xs text-muted-foreground">Provider: {model.provider}</p>
+          {model.cost && (
+            <div className="text-xs">
+              <p>Input: {formatCost(model.cost.input)}</p>
+              <p>Output: {formatCost(model.cost.output)}</p>
+            </div>
+          )}
+          {model.limit?.context && (
+            <p className="text-xs">Context: {model.limit.context.toLocaleString()} tokens</p>
+          )}
+          <div className="flex flex-wrap gap-1">
+            {model.tool_call && <span className="text-xs bg-blue-100 text-blue-800 px-1 rounded">Tool Call</span>}
+            {model.reasoning && <span className="text-xs bg-green-100 text-green-800 px-1 rounded">Reasoning</span>}
+            {model.attachment && <span className="text-xs bg-purple-100 text-purple-800 px-1 rounded">Attachment</span>}
+            {model.open_weights && <span className="text-xs bg-orange-100 text-orange-800 px-1 rounded">Open Weights</span>}
+          </div>
         </div>
       </HoverCardContent>
     </HoverCard>
