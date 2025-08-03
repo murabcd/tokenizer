@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 	title: "Tokenizer",
 	description: "Calculate the number of tokens and the cost of using AI models",
 	icons: {
-		icon: "/flomni.svg",
+		icon: "/logo.svg",
 	},
 };
 
