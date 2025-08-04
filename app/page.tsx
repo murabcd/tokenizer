@@ -93,16 +93,11 @@ Sequences of characters commonly found next to each other may be grouped togethe
 					</p>
 				</div>
 
-				{/* Model Selection */}
-				<div className="mb-5">
-					<ModelSelector onModelChange={handleModelChange} />
-				</div>
-
 				{/* Tokenization Tool */}
 				<div className="space-y-4">
 					{/* Text Input */}
 					<div className="space-y-2">
-						<Label htmlFor="text-input">Text to tokenize</Label>
+						<ModelSelector onModelChange={handleModelChange} />
 						<Textarea
 							id="text-input"
 							value={text}
@@ -182,7 +177,6 @@ Sequences of characters commonly found next to each other may be grouped togethe
 					{/* Model Capabilities */}
 					{selectedModel && (
 						<div className="space-y-2">
-							<Label>Model capabilities</Label>
 							<div className="flex flex-wrap gap-1">
 								{selectedModel.tool_call && (
 									<span className="text-xs bg-blue-100 text-blue-800 px-1 py-0.5 rounded">
