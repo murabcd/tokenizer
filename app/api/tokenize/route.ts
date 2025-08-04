@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { encode, decode } from "gpt-3-encoder";
+import { encode, decode } from "@/lib/tokenizer-server";
 
 export async function POST(request: NextRequest) {
 	try {

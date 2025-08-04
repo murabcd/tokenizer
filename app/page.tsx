@@ -53,7 +53,11 @@ export default function Home() {
 	};
 
 	const showExample = () => {
-		const exampleText = `The quick brown fox jumps over the lazy dog. This pangram contains every letter of the English alphabet at least once. Pangrams are often used to display font samples and test keyboards. They are also useful for practicing typing and calligraphy. The sentence is simple yet effective for demonstrating how text can be tokenized by language models.`;
+		const exampleText = `Many words map to one token, but some don't: indivisible.
+
+Unicode characters like emojis may be split into many tokens containing the underlying bytes: 🤚🏾
+
+Sequences of characters commonly found next to each other may be grouped together: 1234567890`;
 		setText(exampleText);
 		setCharacterCount(exampleText.length);
 		updateTokenCount(exampleText);
