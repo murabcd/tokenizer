@@ -144,9 +144,10 @@ Sequences of characters commonly found next to each other may be grouped togethe
 										<span className="font-medium">Input:</span>{" "}
 										<span className="tabular-nums">
 											$
-											{((tokenCount / 1000) * selectedModel.cost.input).toFixed(
-												6,
-											)}
+											{(
+												(tokenCount / 1_000_000) *
+												selectedModel.cost.input
+											).toFixed(6)}
 										</span>
 									</div>
 									<div>
@@ -154,7 +155,7 @@ Sequences of characters commonly found next to each other may be grouped togethe
 										<span className="tabular-nums">
 											$
 											{(
-												(tokenCount / 1000) *
+												(tokenCount / 1_000_000) *
 												selectedModel.cost.output
 											).toFixed(6)}
 										</span>
@@ -164,8 +165,8 @@ Sequences of characters commonly found next to each other may be grouped togethe
 										<span className="tabular-nums">
 											$
 											{(
-												(tokenCount / 1000) * selectedModel.cost.input +
-												(tokenCount / 1000) * selectedModel.cost.output
+												(tokenCount / 1_000_000) * selectedModel.cost.input +
+												(tokenCount / 1_000_000) * selectedModel.cost.output
 											).toFixed(6)}
 										</span>
 									</div>

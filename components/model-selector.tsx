@@ -3,7 +3,7 @@
 import * as React from "react";
 import { ChevronDown, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { APIModel } from "@/lib/types";
+import type { APIModel } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
 	Command,
@@ -159,9 +159,9 @@ interface ModelItemProps {
 }
 
 function ModelItem({ model, isSelected, onSelect }: ModelItemProps) {
-	const formatCost = (cost?: number) => {
-		if (!cost) return "N/A";
-		return `$${(cost * 1000).toFixed(2)}/1K tokens`;
+	const formatCostPer1m = (cost?: number) => {
+		if (cost === undefined || cost === null) return "N/A";
+		return `$${cost.toFixed(2)}/1M tokens`;
 	};
 
 	return (
@@ -194,8 +194,8 @@ function ModelItem({ model, isSelected, onSelect }: ModelItemProps) {
 					</p>
 					{model.cost && (
 						<div className="text-xs">
-							<p>Input: {formatCost(model.cost.input)}</p>
-							<p>Output: {formatCost(model.cost.output)}</p>
+							<p>Input: {formatCostPer1m(model.cost.input)}</p>
+							<p>Output: {formatCostPer1m(model.cost.output)}</p>
 						</div>
 					)}
 					{model.limit?.context && (
