@@ -119,7 +119,7 @@ export function ModelSelector({ onModelChange }: ModelSelectorProps) {
 						variant="outline"
 						aria-expanded={open}
 						aria-label="Select a model"
-						className="justify-between"
+						className="justify-between cursor-default"
 					>
 						{selectedModel ? selectedModel.name : "Select a model..."}
 						<ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
